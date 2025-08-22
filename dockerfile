@@ -20,25 +20,6 @@ RUN apt-get update && apt-get install -y \
 # Install Tailscale
 RUN curl -fsSL https://tailscale.com/install.sh | sh
 
-# Download and extract CARLA 0.9.15
-WORKDIR /opt
-RUN mkdir carla
-WORKDIR /opt/carla
-RUN wget https://carla-releases.s3.us-east-005.backblazeb2.com/Linux/CARLA_0.9.15.tar.gz \
-    && tar -xvzf CARLA_0.9.15.tar.gz \
-    && rm CARLA_0.9.15.tar.gz
-
-# Setup Python environment
-WORKDIR /opt/carla/PythonAPI
-RUN python3.7 -m venv /opt/carla-venv
-
-# --- FIX: Install Python packages using the venv's pip ---
-# Instead of trying to 'source activate', we call the pip executable directly.
-# This ensures the packages are installed in the correct isolated environment.
-RUN /opt/carla-venv/bin/pip install --upgrade pip
-RUN /opt/carla-venv/bin/pip install -r /opt/carla/PythonAPI/examples/requirements.txt
-RUN /opt/carla-venv/bin/pip install /opt/carla/PythonAPI/carla/dist/carla-0.9.15-cp37-cp37m-manylinux_2_27_x86_64.whl
-
 # Copy entrypoint
 COPY entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh

@@ -5,6 +5,24 @@
 # VNC_PASS  : VNC password
 # TS_AUTHKEY: Tailscale auth key
 
+cd /workspace
+mkdir carla
+cd /carla
+wget https://carla-releases.s3.us-east-005.backblazeb2.com/Linux/CARLA_0.9.15.tar.gz \
+    && tar -xvzf CARLA_0.9.15.tar.gz \
+    && rm CARLA_0.9.15.tar.gz
+
+# Setup Python environment
+python3.7 -m venv carla-venv
+
+# --- FIX: Install Python packages using the venv's pip ---
+# Instead of trying to 'source activate', we call the pip executable directly.
+# This ensures the packages are installed in the correct isolated environment.
+source /carla-venv/bin/activate
+pip install -r ./PythonAPI/examples/requirements.txt
+pip install ./PythonAPI/carla/dist/carla-0.9.15-cp37-cp37m-manylinux_2_27_x86_64.whl
+
+
 # --- Create user ---
 useradd -m -s /bin/bash carlauser
 echo "carlauser:${USER_PASS}" | chpasswd
@@ -61,8 +79,8 @@ export XDG_RUNTIME_DIR=/tmp/carlauser-runtime
 mkdir -p $XDG_RUNTIME_DIR && chmod 700 $XDG_RUNTIME_DIR
 
 # --- Activate Python venv and start CARLA in the background ---
-source /opt/carla-venv/bin/activate
-/opt/carla/CarlaUE4.sh -opengl &
+source /workspace/carla-venv/bin/activate
+/workspace/carla/CarlaUE4.sh -opengl &
 
 echo "Setup complete. Container is running."
 # --- Keep the user session alive ---
